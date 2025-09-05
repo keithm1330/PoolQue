@@ -4,44 +4,146 @@
     <meta charset="UTF-8">
     <title>RiverValley Community Centre Pool Table</title>
     <style>
-body { font-family: Arial, sans-serif; margin: 0; padding: 0 0 70px; background: #f8f9fa; }
-h1 { text-align: center; padding: 15px; }
-#currentGameContainer { text-align: center; font-size: 20px; font-weight: bold; margin: 20px; color: #333; }
-#currentGameContainer span { font-size: 24px; color: #d32f2f; margin: 0 10px; cursor: pointer; }
-#nextUpContainer { text-align: center; font-size: 18px; margin: 10px 0; color: #555; }
-ul { list-style: none; padding: 0; margin: 0; }
-li { background: white; margin: 8px 12px; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-     text-align: center; font-size: 22px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-li:hover { background: #f1f1f1; }
-#addPlayerBtn { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
-  width: 90%; max-width: 400px; padding: 18px; font-size: 18px; background: #007bff; color: white;
-  border: none; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; }
-#addPlayerBtn:hover { background: #0056b3; }
-.modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-.modal-content { background: white; padding: 20px; border-radius: 8px; width: 80%; max-width: 400px; text-align: center; }
-.modal input { width: 90%; padding: 10px; margin: 10px 0; font-size: 16px; }
-.modal button { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; }
-.modal .confirm { background: #007bff; color: white; }
-.modal .cancel { background: #ccc; }
-#playerOptions .modal-content, #currentGameModal .modal-content { display: flex; flex-direction: column; gap: 10px; }
-#playerOptions button, #currentGameModal button { font-size: 16px; padding: 12px; border-radius: 8px; cursor: pointer; }
-#playerOptions .remove { background: #dc3545; color: white; }
-#playerOptions .toEnd { background: #28a745; color: white; }
-#playerOptions .moveDown { background: #ff9800; color: white; }
-#currentGameModal .winner { background: #28a745; color: white; }
-#currentGameModal .loser { background: #dc3545; color: white; }
-</style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0 0 70px; background: #f8f9fa; }
+        h1 { text-align: center; padding: 15px; }
+
+        /* Current Game */
+        #currentGameContainer.game-card {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 700px;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            font-size: 18px;
+            cursor: default;
+        }
+        .player-card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            background: #f7f7f7;
+            text-align: center;
+            transition: transform 0.2s, background 0.2s;
+            cursor: pointer;
+        }
+        .player-card:hover {
+            transform: translateY(-5px);
+            background: #e0f7fa;
+        }
+        .player-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .player-status {
+            margin-top: 8px;
+            font-size: 16px;
+            color: #777;
+        }
+        .vs {
+            font-size: 22px;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+
+        /* Next Up */
+        #nextUpContainer { text-align: center; font-size: 18px; margin: 10px 0; color: #555; }
+
+        /* Queue */
+        ul { list-style: none; padding: 0; margin: 0; }
+        li {
+            background: white;
+            margin: 8px 12px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        li:hover { background: #f1f1f1; }
+
+        /* Add Player Button */
+        #addPlayerBtn {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            padding: 18px;
+            font-size: 18px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        #addPlayerBtn:hover { background: #0056b3; }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal input { width: 90%; padding: 10px; margin: 10px 0; font-size: 16px; }
+        .modal button { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; }
+        .modal .confirm { background: #007bff; color: white; }
+        .modal .cancel { background: #ccc; }
+
+        /* Player Options Modal */
+        #playerOptions .modal-content, #currentGameModal .modal-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #playerOptions button, #currentGameModal button { font-size: 16px; padding: 12px; border-radius: 8px; cursor: pointer; }
+        #playerOptions .remove { background: #dc3545; color: white; }
+        #playerOptions .toEnd { background: #28a745; color: white; }
+        #playerOptions .moveDown { background: #ff9800; color: white; }
+        #currentGameModal .winner { background: #28a745; color: white; }
+        #currentGameModal .loser { background: #dc3545; color: white; }
+    </style>
 </head>
 <body>
 
 <h1>RiverValley Community Centre Pool Table</h1>
 
 <!-- Current Game -->
-<div id="currentGameContainer">
-    Current Game:
-    <span id="player1">None</span> -v-
-    <span id="player2">None</span>
+<div id="currentGameContainer" class="game-card">
+    <div class="player-card" id="player1Card">
+        <div class="player-name" id="player1">None</div>
+        <div class="player-status" id="player1Status">Waiting</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="player-card" id="player2Card">
+        <div class="player-name" id="player2">None</div>
+        <div class="player-status" id="player2Status">Waiting</div>
+    </div>
 </div>
 
 <!-- Next Up -->
@@ -94,6 +196,8 @@ const playerList = document.getElementById("playerList");
 const player1Span = document.getElementById("player1");
 const player2Span = document.getElementById("player2");
 const nextUpName = document.getElementById("nextUpName");
+const player1Status = document.getElementById("player1Status");
+const player2Status = document.getElementById("player2Status");
 
 // Player options modal
 const optionsModal = document.getElementById("playerOptions");
@@ -163,6 +267,9 @@ function renderQueue() {
 function renderCurrentGame() {
     player1Span.textContent = currentGame[0]?.name || "None";
     player2Span.textContent = currentGame[1]?.name || "None";
+
+    player1Status.textContent = currentGame[0] ? "Playing" : "Waiting";
+    player2Status.textContent = currentGame[1] ? "Playing" : "Waiting";
 }
 
 function updateNextUp() {
@@ -181,10 +288,8 @@ function handleCurrentGameClick(index) {
 winnerBtn.onclick = async () => {
     if (currentGameIndex === null) return;
     const otherIndex = currentGameIndex === 0 ? 1 : 0;
-    // Move loser (other player) to bottom of queue
     const loser = currentGame[otherIndex];
     if (loser) await fetch(`/players/${loser.id}/moveToEnd`, { method: "PUT" });
-    // Replace loser with next player in queue
     currentGame[otherIndex] = queue.length > 0 ? queue.shift() : null;
     currentGameModal.style.display = "none";
     currentGameIndex = null;
@@ -198,7 +303,6 @@ loserBtn.onclick = async () => {
     if (currentGameIndex === null) return;
     const loser = currentGame[currentGameIndex];
     if (loser) await fetch(`/players/${loser.id}/moveToEnd`, { method: "PUT" });
-    // Replace loser with next player in queue
     currentGame[currentGameIndex] = queue.length > 0 ? queue.shift() : null;
     currentGameModal.style.display = "none";
     currentGameIndex = null;
@@ -233,8 +337,8 @@ removeBtn.onclick = async () => {
 closeOptions.onclick = () => { optionsModal.style.display = "none"; };
 closeCurrentGame.onclick = () => { currentGameModal.style.display = "none"; currentGameIndex = null; };
 
-player1Span.onclick = () => handleCurrentGameClick(0);
-player2Span.onclick = () => handleCurrentGameClick(1);
+document.getElementById("player1Card").onclick = () => handleCurrentGameClick(0);
+document.getElementById("player2Card").onclick = () => handleCurrentGameClick(1);
 
 // Close modals when clicking outside
 window.onclick = (e) => {
