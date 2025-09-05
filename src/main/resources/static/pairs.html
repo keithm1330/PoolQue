@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Random Doubles Matches</title>
+    <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+    .container { background: white; padding: 30px 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+    h1 { margin-bottom: 10px; color: #333; }
+    p.instructions { font-size: 14px; color: #555; margin-bottom: 20px; }
+    button { padding: 12px 20px; font-size: 16px; border: none; border-radius: 8px; background: #007bff; color: white; cursor: pointer; margin-bottom: 20px; }
+    button:hover { background: #0056b3; }
+    ul { list-style: none; padding: 0; }
+    li { background: #f1f1f1; margin: 8px 0; padding: 12px; border-radius: 6px; font-weight: bold; }
+    @media (max-width: 600px) {
+      .container { padding: 20px; }
+      button { font-size: 14px; padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+    <h1>Random Doubles Matches</h1>
+    <p class="instructions">
+        Click below to generate random doubles matches from the current player list.
+    </p>
+    <button id="generateBtn">Generate Matches</button>
+    <ul id="matchesList"></ul>
+</div>
+
+<script>
+    const generateBtn = document.getElementById("generateBtn");
+    const matchesList = document.getElementById("matchesList");
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    generateBtn.onclick = async () => {
+      matchesList.innerHTML = "";
+      try {
+        const res = await fetch("/players");
+        const players = await res.json();
+        if (players.length < 4) {
+          matchesList.innerHTML = "<li>Not enough players for doubles matches (minimum 4).</li>";
+          return;
+        }
+
+        const shuffled = shuffleArray([...players]);
+
+        // Create pairs
+        const pairs = [];
+        for (let i = 0; i < shuffled.length; i += 2) {
+          const player1 = shuffled[i];
+          const player2 = shuffled[i + 1];
+          if (player2) {
+            pairs.push(`${player1.name} & ${player2.name}`);
+          } else {
+            pairs.push(`${player1.name} (no partner)`);
+          }
+        }
+
+        // Create matches: pair 0 vs pair 1, pair 2 vs pair 3, etc.
+        for (let i = 0; i < pairs.length; i += 2) {
+          const pair1 = pairs[i];
+          const pair2 = pairs[i + 1];
+          const li = document.createElement("li");
+          if (pair2) {
+            li.textContent = `${pair1} vs ${pair2}`;
+          } else {
+            li.textContent = `${pair1} has no opponent`;
+          }
+          matchesList.appendChild(li);
+        }
+
+      } catch (err) {
+        matchesList.innerHTML = "<li>Error fetching player list.</li>";
+      }
+    };
+  </script>
+</body>
+</html>

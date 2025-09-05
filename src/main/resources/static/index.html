@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RiverValley Community Centre Pool Table</title>
+    <style>
+body { font-family: Arial, sans-serif; margin: 0; padding: 0 0 70px; background: #f8f9fa; }
+h1 { text-align: center; padding: 15px; }
+#currentGameContainer { text-align: center; font-size: 20px; font-weight: bold; margin: 20px; color: #333; }
+#currentGameContainer span { font-size: 24px; color: #d32f2f; margin: 0 10px; cursor: pointer; }
+#nextUpContainer { text-align: center; font-size: 18px; margin: 10px 0; color: #555; }
+ul { list-style: none; padding: 0; margin: 0; }
+li { background: white; margin: 8px 12px; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+     text-align: center; font-size: 22px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+li:hover { background: #f1f1f1; }
+#addPlayerBtn { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
+  width: 90%; max-width: 400px; padding: 18px; font-size: 18px; background: #007bff; color: white;
+  border: none; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; }
+#addPlayerBtn:hover { background: #0056b3; }
+.modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+.modal-content { background: white; padding: 20px; border-radius: 8px; width: 80%; max-width: 400px; text-align: center; }
+.modal input { width: 90%; padding: 10px; margin: 10px 0; font-size: 16px; }
+.modal button { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; }
+.modal .confirm { background: #007bff; color: white; }
+.modal .cancel { background: #ccc; }
+#playerOptions .modal-content, #currentGameModal .modal-content { display: flex; flex-direction: column; gap: 10px; }
+#playerOptions button, #currentGameModal button { font-size: 16px; padding: 12px; border-radius: 8px; cursor: pointer; }
+#playerOptions .remove { background: #dc3545; color: white; }
+#playerOptions .toEnd { background: #28a745; color: white; }
+#playerOptions .moveDown { background: #ff9800; color: white; }
+#currentGameModal .winner { background: #28a745; color: white; }
+#currentGameModal .loser { background: #dc3545; color: white; }
+</style>
+</head>
+<body>
+
+<h1>RiverValley Community Centre Pool Table</h1>
+
+<!-- Current Game -->
+<div id="currentGameContainer">
+    Current Game:
+    <span id="player1">None</span> -v-
+    <span id="player2">None</span>
+</div>
+
+<!-- Next Up -->
+<div id="nextUpContainer">Next Up: <span id="nextUpName">None</span></div>
+
+<!-- Queue -->
+<ul id="playerList"></ul>
+
+<button id="addPlayerBtn">+ Add Player</button>
+
+<!-- Add Player Modal -->
+<div id="playerModal" class="modal">
+    <div class="modal-content">
+        <h2>Add Player</h2>
+        <input type="text" id="playerName" placeholder="Enter player name">
+        <br>
+        <button class="confirm" id="savePlayer">Add</button>
+        <button class="cancel" id="cancelModal">Cancel</button>
+    </div>
+</div>
+
+<!-- Queue Player Options Modal -->
+<div id="playerOptions" class="modal">
+    <div class="modal-content">
+        <h2 id="optionTitle">Player Options</h2>
+        <button class="toEnd" id="moveToEndBtn">Move to End of List</button>
+        <button class="moveDown" id="moveDownBtn">Move Down</button>
+        <button class="remove" id="removeBtn">Remove Player</button>
+        <button class="cancel" id="closeOptions">Cancel</button>
+    </div>
+</div>
+
+<!-- Current Game Modal -->
+<div id="currentGameModal" class="modal">
+    <div class="modal-content">
+        <h2 id="currentGameTitle">Player Action</h2>
+        <button class="winner" id="winnerBtn">Winner</button>
+        <button class="loser" id="loserBtn">Loser</button>
+        <button class="cancel" id="closeCurrentGame">Cancel</button>
+    </div>
+</div>
+
+<script>
+const addPlayerBtn = document.getElementById("addPlayerBtn");
+const modal = document.getElementById("playerModal");
+const saveBtn = document.getElementById("savePlayer");
+const cancelBtn = document.getElementById("cancelModal");
+const playerNameInput = document.getElementById("playerName");
+const playerList = document.getElementById("playerList");
+const player1Span = document.getElementById("player1");
+const player2Span = document.getElementById("player2");
+const nextUpName = document.getElementById("nextUpName");
+
+// Player options modal
+const optionsModal = document.getElementById("playerOptions");
+const optionTitle = document.getElementById("optionTitle");
+const moveToEndBtn = document.getElementById("moveToEndBtn");
+const moveDownBtn = document.getElementById("moveDownBtn");
+const removeBtn = document.getElementById("removeBtn");
+const closeOptions = document.getElementById("closeOptions");
+
+// Current game modal
+const currentGameModal = document.getElementById("currentGameModal");
+const currentGameTitle = document.getElementById("currentGameTitle");
+const winnerBtn = document.getElementById("winnerBtn");
+const loserBtn = document.getElementById("loserBtn");
+const closeCurrentGame = document.getElementById("closeCurrentGame");
+
+let queue = [];
+let currentGame = [null, null]; // two current players
+let currentPlayerOption = null;
+let currentGameIndex = null;
+
+// Add player modal handlers
+addPlayerBtn.onclick = () => { modal.style.display = "flex"; playerNameInput.value = ""; playerNameInput.focus(); };
+cancelBtn.onclick = () => { modal.style.display = "none"; };
+
+// Add player
+saveBtn.onclick = async () => {
+    const name = playerNameInput.value.trim();
+    if (name) {
+        await fetch("/players?name=" + encodeURIComponent(name), { method: "POST" });
+        modal.style.display = "none";
+        loadPlayers();
+    }
+};
+
+// Load all players
+async function loadPlayers() {
+    const res = await fetch("/players");
+    const players = await res.json();
+
+    // Fill current game if empty
+    if (!currentGame[0] && players.length > 0) currentGame[0] = players[0];
+    if (!currentGame[1] && players.length > 1) currentGame[1] = players[1];
+
+    // Queue = all players not in current game
+    queue = players.filter(p => !currentGame.some(cg => cg?.id === p.id));
+
+    renderQueue();
+    renderCurrentGame();
+    updateNextUp();
+}
+
+function renderQueue() {
+    playerList.innerHTML = "";
+    queue.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p.name;
+        li.onclick = () => {
+            currentPlayerOption = p;
+            optionTitle.textContent = `Options for ${p.name}`;
+            optionsModal.style.display = "flex";
+        };
+        playerList.appendChild(li);
+    });
+}
+
+function renderCurrentGame() {
+    player1Span.textContent = currentGame[0]?.name || "None";
+    player2Span.textContent = currentGame[1]?.name || "None";
+}
+
+function updateNextUp() {
+    nextUpName.textContent = queue.length > 0 ? queue[0].name : "None";
+}
+
+// Click on current game player -> open modal
+function handleCurrentGameClick(index) {
+    if (!currentGame[index]) return;
+    currentGameIndex = index;
+    currentGameTitle.textContent = `Player ${currentGame[index].name} Action`;
+    currentGameModal.style.display = "flex";
+}
+
+// Winner button handler
+winnerBtn.onclick = async () => {
+    if (currentGameIndex === null) return;
+    const otherIndex = currentGameIndex === 0 ? 1 : 0;
+    // Move loser (other player) to bottom of queue
+    const loser = currentGame[otherIndex];
+    if (loser) await fetch(`/players/${loser.id}/moveToEnd`, { method: "PUT" });
+    // Replace loser with next player in queue
+    currentGame[otherIndex] = queue.length > 0 ? queue.shift() : null;
+    currentGameModal.style.display = "none";
+    currentGameIndex = null;
+    renderCurrentGame();
+    renderQueue();
+    updateNextUp();
+};
+
+// Loser button handler
+loserBtn.onclick = async () => {
+    if (currentGameIndex === null) return;
+    const loser = currentGame[currentGameIndex];
+    if (loser) await fetch(`/players/${loser.id}/moveToEnd`, { method: "PUT" });
+    // Replace loser with next player in queue
+    currentGame[currentGameIndex] = queue.length > 0 ? queue.shift() : null;
+    currentGameModal.style.display = "none";
+    currentGameIndex = null;
+    renderCurrentGame();
+    renderQueue();
+    updateNextUp();
+};
+
+// Queue player options
+moveToEndBtn.onclick = async () => {
+    if (!currentPlayerOption) return;
+    await fetch(`/players/${currentPlayerOption.id}/moveToEnd`, { method: "PUT" });
+    optionsModal.style.display = "none";
+    loadPlayers();
+};
+
+moveDownBtn.onclick = async () => {
+    if (!currentPlayerOption) return;
+    await fetch(`/players/${currentPlayerOption.id}/moveDown`, { method: "PUT" });
+    optionsModal.style.display = "none";
+    loadPlayers();
+};
+
+removeBtn.onclick = async () => {
+    if (!currentPlayerOption) return;
+    await fetch(`/players/${currentPlayerOption.id}`, { method: "DELETE" });
+    optionsModal.style.display = "none";
+    loadPlayers();
+};
+
+// Close modals
+closeOptions.onclick = () => { optionsModal.style.display = "none"; };
+closeCurrentGame.onclick = () => { currentGameModal.style.display = "none"; currentGameIndex = null; };
+
+player1Span.onclick = () => handleCurrentGameClick(0);
+player2Span.onclick = () => handleCurrentGameClick(1);
+
+// Close modals when clicking outside
+window.onclick = (e) => {
+    if (e.target === modal) modal.style.display = "none";
+    if (e.target === optionsModal) optionsModal.style.display = "none";
+    if (e.target === currentGameModal) currentGameModal.style.display = "none";
+};
+
+// Initial load & auto-refresh
+loadPlayers();
+setInterval(loadPlayers, 3000);
+</script>
+</body>
+</html>
