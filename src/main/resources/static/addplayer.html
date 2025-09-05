@@ -2,26 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Play Pool RiverValley Community Centre</title>
+    <title>Play Pool - RiverValley Community Centre</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
     /* Reset & body */
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
     /* Card container */
     .card {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      background: linear-gradient(135deg, #ffffff, #e0f7fa);
+      padding: 30px 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
       width: 100%;
       max-width: 400px;
       text-align: center;
+      transition: transform 0.2s;
     }
+    .card:hover { transform: translateY(-3px); }
 
     h1 {
-      margin-bottom: 10px;
-      color: #333;
+      margin-bottom: 12px;
+      color: #00796b;
+      font-size: 24px;
     }
 
     p.instructions {
@@ -32,39 +44,55 @@
 
     input {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       font-size: 16px;
       margin-bottom: 15px;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 12px;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      border-color: #42a5f5;
+      box-shadow: 0 0 8px rgba(66,165,245,0.3);
+      outline: none;
     }
 
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       font-size: 16px;
-      background: #007bff;
+      background: linear-gradient(135deg, #42a5f5, #1e88e5);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
-      transition: background 0.2s;
+      font-weight: 600;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      transition: background 0.2s, transform 0.2s;
     }
-
     button:hover {
-      background: #0056b3;
+      background: linear-gradient(135deg, #1e88e5, #1565c0);
+      transform: translateY(-2px);
     }
 
     #status {
       margin-top: 15px;
       font-weight: bold;
-      min-height: 20px;
+      min-height: 22px;
+      font-size: 14px;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+      .card { padding: 25px 15px; }
+      h1 { font-size: 20px; }
+      input, button { padding: 12px; font-size: 15px; }
     }
   </style>
 </head>
 <body>
 <div class="card">
-    <h1>Play Pool RiverValley Community Centre</h1>
+    <h1>Play Pool</h1>
     <p class="instructions">
         Enter the player's name below and click <strong>Add Player</strong>. The player will appear in the main pool queue automatically.
     </p>
@@ -86,7 +114,6 @@
         return;
       }
 
-      // Capitalize first letters
       const formattedName = name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 
       try {
@@ -106,7 +133,6 @@
       }
     };
 
-    // Optional: allow pressing Enter to submit
     playerNameInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") addBtn.click();
     });
