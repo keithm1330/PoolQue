@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Play Pool RiverValley Community Centre</title>
+    <style>
+    /* Reset & body */
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+
+    /* Card container */
+    .card {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    p.instructions {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+    <h1>Play Pool RiverValley Community Centre</h1>
+    <p class="instructions">
+        Enter the player's name below and click <strong>Add Player</strong>. The player will appear in the main pool queue automatically.
+    </p>
+    <input type="text" id="playerName" placeholder="Enter player name">
+    <button id="addBtn">Add Player</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    const addBtn = document.getElementById("addBtn");
+    const playerNameInput = document.getElementById("playerName");
+    const status = document.getElementById("status");
+
+    addBtn.onclick = async () => {
+      const name = playerNameInput.value.trim();
+      if (!name) {
+        status.textContent = "Please enter a player name!";
+        status.style.color = "red";
+        return;
+      }
+
+      // Capitalize first letters
+      const formattedName = name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+
+      try {
+        const res = await fetch("/players?name=" + encodeURIComponent(formattedName), { method: "POST" });
+        if (res.ok) {
+          status.textContent = `${formattedName} added successfully!`;
+          status.style.color = "green";
+          playerNameInput.value = "";
+          playerNameInput.focus();
+        } else {
+          status.textContent = "Failed to add player.";
+          status.style.color = "red";
+        }
+      } catch (err) {
+        status.textContent = "Error connecting to server.";
+        status.style.color = "red";
+      }
+    };
+
+    // Optional: allow pressing Enter to submit
+    playerNameInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") addBtn.click();
+    });
+  </script>
+</body>
+</html>
